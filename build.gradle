@@ -277,6 +277,7 @@ sonarqube {
         property "sonar.coverage.jacoco.xmlReportPaths", "build/jacoco/jacoco.xml"
         property "sonar.login", "admin"
         property "sonar.password", "password"
+        property "sonar.host.url", "http://sonarqube:9000"
     }
 }
 
