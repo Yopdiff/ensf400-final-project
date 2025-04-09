@@ -3,7 +3,7 @@
 pipeline {
 
   agent any
-  
+
   //agent {
   //  docker{
   //    image 'gradle:7.6.1-jdk11'
@@ -20,11 +20,11 @@ pipeline {
    }
 
   stages {
-    stage('Add Dependencies') {
-      steps {
-        sh 'pip install pipenv'
-      }
-    }
+    //stage('Add Dependencies') {
+      //steps {
+        //sh 'pip install pipenv'
+      //}
+    //}
 
     // build the war file (the binary).  This is the only
     // place that happens.
