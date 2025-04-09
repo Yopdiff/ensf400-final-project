@@ -275,7 +275,7 @@ sonarqube {
         property "sonar.java.binaries", "build/classes/java/main"
         property "sonar.junit.reportPaths", "build/test-results/test/,build/test-results/integrate"
         property "sonar.coverage.jacoco.xmlReportPaths", "build/jacoco/jacoco.xml"
-        property "sonar.host.url", System.getenv("SONAR_HOST_URL") ?: "http://localhost:9000"
+        property "sonar.host.url", System.getenv("SONAR_HOST_URL") ?: "http://sonarqube:9000"
         property "sonar.login", System.getenv("SONAR_LOGIN") ?: ""
         property "sonar.password", System.getenv("SONAR_PASSWORD") ?: ""
     }

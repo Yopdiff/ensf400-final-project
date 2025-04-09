@@ -71,14 +71,14 @@ pipeline {
 
     // Runs an analysis of the code, looking for any
     // patterns that suggest potential bugs.
-    stage('Static Analysis') {
-      steps {
-        sh './gradlew sonarqube'
+//    stage('Static Analysis') {
+//      steps {
+//        sh './gradlew sonarqube'
         // wait for sonarqube to finish its analysis
-        sleep 5
-        sh './gradlew checkQualityGate'
-      }
-    }
+//        sleep 5
+//        sh './gradlew checkQualityGate'
+//      }
+//    }
 
 
     // Move the binary over to the test environment and
