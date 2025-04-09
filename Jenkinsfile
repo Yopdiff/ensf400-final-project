@@ -18,6 +18,11 @@ pipeline {
    }
 
   stages {
+    stage('Add Dependencies') {
+      steps {
+        sh 'pip install pipenv'
+      }
+    }
 
     // build the war file (the binary).  This is the only
     // place that happens.
