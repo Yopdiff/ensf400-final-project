@@ -452,7 +452,8 @@ task checkQualityGate() {
 
 // throws an exception if the quality gate fails.
 static void isQualityGateGood() {
-    URL url = new URL("http://sonarqube:9000/api/qualitygates/project_status?projectKey=Demo")
+    def sonarHostUrl = System.getenv("SONAR_HOST_URL") ?: "http://localhost:9000"
+    URL url = new URL("${sonarHostUrl}/api/qualitygates/project_status?projectKey=Demo")
     HttpURLConnection connection = (HttpURLConnection) url.openConnection()
     connection.setRequestMethod("GET")
     connection.connect()
