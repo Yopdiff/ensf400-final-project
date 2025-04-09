@@ -2,7 +2,11 @@
 
 pipeline {
 
-  agent any
+  agent {
+    docker{
+      image 'gradle:7.6.1-jdk11'
+    }
+  }
 
    environment {
         // This is set so that the Python API tests will recognize it
