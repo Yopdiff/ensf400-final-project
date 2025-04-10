@@ -126,8 +126,17 @@ pipeline {
     stage('Deploy to Test') {
       steps {
       sh './gradlew deployToTestWindowsLocal'
-      // pipenv needs to be installed and on the path for this to work.
-      sh 'PIPENV_IGNORE_VIRTUALENVS=1 pipenv install'
+      // Update PATH to include user local bin where pipenv is installed
+      sh '''
+        # add pip and pipenv to PATH
+        export PATH=$PATH:$HOME/.local/bin
+        
+        # Show the current PATH for debugging
+        echo "PATH for pipenv: $PATH"
+        
+        # Install dependencies using pipenv
+        PIPENV_IGNORE_VIRTUALENVS=1 pipenv install
+      '''
 
       // Wait here until the server tells us it's up and listening
       sh './gradlew waitForHeartBeat'
