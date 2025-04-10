@@ -30,9 +30,9 @@ pipeline {
 
     stage('Add Dependencies') {
       steps {
-        sh 'which pip || echo "pip not found"'
-        sh 'pip --version || echo "pip version check failed"'
-        sh 'pip install pipenv'
+        sh 'which pip3 || echo "pip3 not found"'
+        sh 'pip3 --version || echo "pip3 version check failed"'
+        sh 'pip3 install pipenv'
       }
     }
 
