@@ -18,7 +18,7 @@ pipeline {
         SONAR_HOST_URL= 'http://sonarqube:9000'
         SONAR_LOGIN = "${SONAR_LOGIN}"
         SONAR_PASSWORD = "${SONAR_PASSWORD}"
-        SONAR_TOKEN = credentials('sonar-token')
+        SONAR_TOKEN = credentials('sonarqube-token')
    }
 
   stages {
