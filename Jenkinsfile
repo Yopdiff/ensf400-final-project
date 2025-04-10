@@ -2,15 +2,14 @@
 
 pipeline {
 
-  agent any
 
-  //agent {
-  //  docker{
-  //    image 'gradle:7.6.1-jdk11'
-  //  }
- // }
+  agent {
+    docker{
+      image 'gradle:7.6.1-jdk11'
+    }
+  }
 
-   environment {
+  environment {
         // This is set so that the Python API tests will recognize it
         // and go through the Zap proxy waiting at 9888
         HTTP_PROXY = 'http://127.0.0.1:9888'
@@ -20,11 +19,22 @@ pipeline {
    }
 
   stages {
-    //stage('Add Dependencies') {
-      //steps {
-        //sh 'pip install pipenv'
-      //}
-    //}
+    stage('Install Python and pip') {
+      steps {
+        sh 'apt-get update'
+        sh 'apt-get install -y python3 python3-pip'
+        sh 'python3 --version || echo "Python installation failed"'
+        sh 'pip3 --version || echo "pip installation failed"'
+      }
+    }
+
+    stage('Add Dependencies') {
+      steps {
+        sh 'which pip || echo "pip not found"'
+        sh 'pip --version || echo "pip version check failed"'
+        sh 'pip install pipenv'
+      }
+    }
 
     // build the war file (the binary).  This is the only
     // place that happens.
