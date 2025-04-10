@@ -6,7 +6,7 @@ pipeline {
   agent {
     docker{
       image 'gradle:7.6.1-jdk11'
-      // args '-v $WORKSPACE/.gradle:/home/gradle/.gradle --network dev-net'
+      args '--network dev-net -v gradle-cache:/home/gradle/.gradle'
 
     }
   }
