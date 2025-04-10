@@ -134,8 +134,8 @@ pipeline {
           echo "Starting Tomcat server..."
           
           # Start the application using Gradle's appRun task which uses the Gretty plugin
-          # This will start a Tomcat instance with our application deployed
-          ./gradlew appRun &
+          # Use -Dorg.gradle.jvmargs to make Tomcat bind to all interfaces (0.0.0.0) instead of just localhost
+          ./gradlew -Dorg.gretty.host=0.0.0.0 appRun &
           
           # Give the server time to initialize
           sleep 15

@@ -41,6 +41,15 @@ services:
     networks:
       - dev-net
       
+  zap:
+    image: zaproxy/zap-stable
+    ports:
+      - "9888:8080"
+      - "9889:8090"
+    command: zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
+    networks:
+      - dev-net
+      
 volumes:
   jenkins_home:
   sonar_data:
