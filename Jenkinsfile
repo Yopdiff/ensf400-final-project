@@ -2,14 +2,14 @@
 
 pipeline {
 
-  agent any
-  // agent {
-  //   docker{
-  //     image 'gradle:7.6.1-jdk11'
-  //     args '-v $HOME/.gradle:/home/gradle/.gradle --network dev-net'
+  // agent any
+  agent {
+    docker{
+      image 'gradle:7.6.1-jdk11'
+      args '-v $HOME/.gradle:/home/gradle/.gradle --network dev-net'
 
-  //   }
-  // }
+    }
+  }
 
   environment {
         // This is set so that the Python API tests will recognize it
@@ -21,44 +21,44 @@ pipeline {
    }
 
   stages {
-    // stage('Check Python and Install Dependencies') {
-    //   steps {
-    //     // check if Python and pip are installed
-    //     sh 'python3 --version || echo "Python not available"'
-    //     sh 'pip3 --version || echo "pip not available"'
+    stage('Check Python and Install Dependencies') {
+      steps {
+        // check if Python and pip are installed
+        sh 'python3 --version || echo "Python not available"'
+        sh 'pip3 --version || echo "pip not available"'
         
-    //     // if Python is not installed, try to install it
-    //     sh '''
-    //       if ! command -v pip3 &> /dev/null; then
-    //         echo "Pip not found, installing pip"
-    //         curl -o get-pip.py https://bootstrap.pypa.io/get-pip.py
-    //         python3 get-pip.py --user
+        // if Python is not installed, try to install it
+        sh '''
+          if ! command -v pip3 &> /dev/null; then
+            echo "Pip not found, installing pip"
+            curl -o get-pip.py https://bootstrap.pypa.io/get-pip.py
+            python3 get-pip.py --user
             
-    //         # add pip to PATH
-    //         export PATH=$PATH:$HOME/.local/bin
-    //         echo "Updated PATH: $PATH"
+            # add pip to PATH
+            export PATH=$PATH:$HOME/.local/bin
+            echo "Updated PATH: $PATH"
             
-    //         # check if pip is installed
-    //         which pip || which pip3
-    //         pip --version || pip3 --version
-    //       fi
-    //     '''
+            # check if pip is installed
+            which pip || which pip3
+            pip --version || pip3 --version
+          fi
+        '''
         
-    //     // check if pip is installed and install pipenv
-    //     sh '''
-    //       # add pip to PATH
-    //       export PATH=$PATH:$HOME/.local/bin
+        // check if pip is installed and install pipenv
+        sh '''
+          # add pip to PATH
+          export PATH=$PATH:$HOME/.local/bin
           
-    //       # install pipenv if not already installed
-    //       echo "Installing pipenv"
-    //       pip install pipenv --user || pip3 install pipenv --user
+          # install pipenv if not already installed
+          echo "Installing pipenv"
+          pip install pipenv --user || pip3 install pipenv --user
           
-    //       # check if pipenv is installed
-    //       export PATH=$PATH:$HOME/.local/bin
-    //       which pipenv || echo "pipenv not found in PATH"
-    //     '''
-    //   }
-    // }
+          # check if pipenv is installed
+          export PATH=$PATH:$HOME/.local/bin
+          which pipenv || echo "pipenv not found in PATH"
+        '''
+      }
+    }
 
     // build the war file (the binary).  This is the only
     // place that happens.
@@ -114,7 +114,7 @@ pipeline {
     // patterns that suggest potential bugs.
    stage('Static Analysis') {
      steps {
-       sh './gradlew sonarqube'
+       sh './gradlew sonarqube -Dsonar.token=$SONAR_AUTH_TOKEN'
         // wait for sonarqube to finish its analysis
        sleep 5
        sh './gradlew checkQualityGate'

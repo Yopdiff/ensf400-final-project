@@ -1,4 +1,4 @@
-FROM jenkins/jenkins:lts-jdk11
+FROM jenkins/jenkins:lts-jdk17
 
 # Disable the setup wizard
 ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
@@ -6,7 +6,7 @@ ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
 # Switch to root to install additional packages and update permissions
 USER root
 RUN apt-get update && \
-    apt-get install -y git python3 chromium-driver docker.io && \
+    apt-get install -y git python3 chromium-driver docker.io  && \
     rm -rf /var/lib/apt/lists/* && \
     groupadd -f docker && \
     usermod -aG docker jenkins
