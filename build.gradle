@@ -267,8 +267,8 @@ check.dependsOn(jacocoTestReport)
 
 sonarqube {
     properties {
-        property "sonar.projectKey", "$projectname"
-        property "sonar.projectName", "$projectname"
+        property "sonar.projectKey", "demo"
+        property "sonar.projectName", "demo"
         property "sonar.projectDescription", "A demonstration of a web application with good test coverage and best practices"
         property "sonar.sources", "src/main/java"
         property "sonar.tests", "src/test/java,src/integration_test/java,src/bdd_test/java"
@@ -276,8 +276,6 @@ sonarqube {
         property "sonar.junit.reportPaths", "build/test-results/test/,build/test-results/integrate"
         property "sonar.coverage.jacoco.xmlReportPaths", "build/jacoco/jacoco.xml"
         property "sonar.host.url", System.getenv("SONAR_HOST_URL") ?: "http://sonarqube:9000"
-        property "sonar.login", System.getenv("SONAR_LOGIN") ?: ""
-        property "sonar.password", System.getenv("SONAR_PASSWORD") ?: ""
     }
 }
 

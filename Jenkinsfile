@@ -118,7 +118,7 @@ pipeline {
           script {
       echo "SONAR_TOKEN (first 6 chars): ${SONAR_TOKEN[0..5]}"
     }
-       sh './gradlew sonarqube -Dsonar.login=$SONAR_TOKEN'
+       sh './gradlew sonarqube -Dsonar.login=$SONAR_TOKEN --stacktrace'
         // wait for sonarqube to finish its analysis
        sleep 5
        sh './gradlew checkQualityGate'
