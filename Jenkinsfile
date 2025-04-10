@@ -133,7 +133,7 @@ pipeline {
         if ! curl -s http://localhost:8080 > /dev/null; then
           echo "Starting Tomcat server on all interfaces (0.0.0.0)..."
           
-          # Run Tomcat directly in foreground for simplicity
+          # Run Tomcat directly in background
           ./gradlew -Dorg.gretty.host=0.0.0.0 appRun > tomcat.log 2>&1 &
           TOMCAT_PID=$!
           echo "Tomcat starting with PID: $TOMCAT_PID"
@@ -141,9 +141,9 @@ pipeline {
           # Save PID to file for later use if needed
           echo $TOMCAT_PID > tomcat.pid
           
-          # Wait just 15 seconds instead of 45
-          echo "Waiting 15 seconds for Tomcat to initialize..."
-          sleep 15
+          # Wait just 10 seconds instead of 15
+          echo "Waiting 10 seconds for Tomcat to initialize..."
+          sleep 10
           
           # Check if Tomcat process is running
           echo "Checking if Tomcat process is running:"
@@ -151,19 +151,28 @@ pipeline {
             echo "✅ Tomcat is running with PID: $TOMCAT_PID"
           else
             echo "⚠️ WARNING: Tomcat process not found! It may have exited."
+            # Try to find Java process that might be Tomcat
+            echo "Checking for Java processes:"
+            ps aux | grep java
           fi
           
           # Try connecting directly to the server to verify it's working
           echo "Trying to connect to server directly:"
-          for i in {1..3}; do
+          
+          # Use simple counter instead of brace expansion for shell compatibility
+          for i in 1 2 3; do
+            echo "Connection attempt $i..."
             if curl -s http://localhost:8080/demo > /dev/null; then
               echo "✅ Server is responding on localhost:8080/demo"
               break
             elif [ $i -eq 3 ]; then
               echo "❌ ERROR: Server is not responding after 3 attempts. Check tomcat.log for details."
+              # Show last few lines of log for diagnostics
+              echo "Last 10 lines of tomcat.log:"
+              tail -10 tomcat.log
             else
-              echo "Attempt $i failed, retrying in 3 seconds..."
-              sleep 3
+              echo "Attempt $i failed, retrying in 2 seconds..."
+              sleep 2
             fi
           done
         else
