@@ -133,33 +133,36 @@ pipeline {
         if ! curl -s http://localhost:8080 > /dev/null; then
           echo "Starting Tomcat server on all interfaces (0.0.0.0)..."
           
-          # important: used nohup to run the process in the background
-          # disown to detach the process from the terminal
-          nohup ./gradlew -Dorg.gretty.host=0.0.0.0 appRun > tomcat.log 2>&1 &
+          # Important: Use 'setsid' and 'nohup' together to completely detach the process
+          # Use '&' to run in background and capture the PID
+          setsid nohup ./gradlew -Dorg.gretty.host=0.0.0.0 appRun > tomcat.log 2>&1 &
           
-          # Get the PID of the last background process
+          # Save the background process ID
           TOMCAT_PID=$!
           echo "Tomcat started with PID: $TOMCAT_PID"
           
-          # Disown the process to detach it from the terminal
-          disown $TOMCAT_PID || echo "Failed to disown process"
-          
-          # save the PID to a file for later reference
+          # Save PID to file for later use if needed
           echo $TOMCAT_PID > tomcat.pid
           
-          # Wait for a few seconds to allow Tomcat to initialize
-          echo "Waiting 30 seconds for Tomcat to initialize..."
-          sleep 30
+          # Give the server enough time to initialize
+          echo "Waiting 45 seconds for Tomcat to initialize..."
+          sleep 45
           
-          # Tomcat process check if it is running
+          # Check if Tomcat process is running
           echo "Checking if Tomcat process is running:"
           if ps -p $TOMCAT_PID > /dev/null; then
             echo "Tomcat is running with PID: $TOMCAT_PID"
           else
-            echo "WARNING: Tomcat process not found! It might have terminated."
+            echo "WARNING: Tomcat process not found! Trying to verify server is running by connection..."
+            # Verify if server is running even if process is not visible
+            if curl -s http://localhost:8080/demo > /dev/null; then
+              echo "Server is responding on localhost:8080/demo despite PID check failure"
+            else
+              echo "ERROR: Server is not responding. Tomcat may have failed to start."
+            fi
           fi
           
-          # Check if Tomcat is accessible
+          # Try connecting directly to the server to verify it's working
           echo "Trying to connect to server directly:"
           curl -v http://localhost:8080/demo || echo "Server not responding on localhost"
           curl -v http://0.0.0.0:8080/demo || echo "Server not responding on 0.0.0.0"
