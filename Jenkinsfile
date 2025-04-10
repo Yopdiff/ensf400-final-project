@@ -27,16 +27,34 @@ pipeline {
         
         // if Python is not installed, try to install it
         sh '''
-          if ! command -v python3 &> /dev/null; then
-            echo "Python not found, trying alternative installation method"
+          if ! command -v pip3 &> /dev/null; then
+            echo "Pip not found, installing pip"
             curl -o get-pip.py https://bootstrap.pypa.io/get-pip.py
-            python get-pip.py || python3 get-pip.py
+            python3 get-pip.py --user
+            
+            # add pip to PATH
+            export PATH=$PATH:$HOME/.local/bin
+            echo "Updated PATH: $PATH"
+            
+            # check if pip is installed
+            which pip || which pip3
+            pip --version || pip3 --version
           fi
         '''
         
-        // check if pip is installed and install pipenv if not
-        sh 'pip --version || pip3 --version || echo "pip still not available"'
-        sh 'pip install pipenv || pip3 install pipenv || echo "Failed to install pipenv"'
+        // check if pip is installed and install pipenv
+        sh '''
+          # add pip to PATH
+          export PATH=$PATH:$HOME/.local/bin
+          
+          # install pipenv if not already installed
+          echo "Installing pipenv"
+          pip install pipenv --user || pip3 install pipenv --user
+          
+          # check if pipenv is installed
+          export PATH=$PATH:$HOME/.local/bin
+          which pipenv || echo "pipenv not found in PATH"
+        '''
       }
     }
 
