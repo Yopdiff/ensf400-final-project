@@ -18,6 +18,7 @@ pipeline {
         SONAR_HOST_URL= 'http://sonarqube:9000'
         SONAR_LOGIN = "${SONAR_LOGIN}"
         SONAR_PASSWORD = "${SONAR_PASSWORD}"
+        SONAR_TOKEN = credentials('sonar-token')
    }
 
   stages {
@@ -114,7 +115,7 @@ pipeline {
     // patterns that suggest potential bugs.
    stage('Static Analysis') {
      steps {
-       sh './gradlew sonarqube -Dsonar.token=$SONAR_AUTH_TOKEN'
+       sh './gradlew sonarqube -Dsonar.token=$SONAR_TOKEN'
         // wait for sonarqube to finish its analysis
        sleep 5
        sh './gradlew checkQualityGate'

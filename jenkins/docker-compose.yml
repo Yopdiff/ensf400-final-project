@@ -20,7 +20,7 @@ services:
       - dev-net
 
   sonarqube:
-    image: sonarqube:community
+    image: sonarqube:8.9.10-community
     ports:
       - "9000:9000"
     environment:
