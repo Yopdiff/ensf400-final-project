@@ -115,6 +115,9 @@ pipeline {
     // patterns that suggest potential bugs.
    stage('Static Analysis') {
      steps {
+          script {
+      echo "SONAR_TOKEN (first 6 chars): ${SONAR_TOKEN[0..5]}"
+    }
        sh './gradlew sonarqube -Dsonar.login=$SONAR_TOKEN'
         // wait for sonarqube to finish its analysis
        sleep 5
