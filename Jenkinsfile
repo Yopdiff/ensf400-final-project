@@ -131,14 +131,38 @@ pipeline {
       sh '''
         # Check if Tomcat is already running
         if ! curl -s http://localhost:8080 > /dev/null; then
-          echo "Starting Tomcat server..."
+          echo "Starting Tomcat server on all interfaces (0.0.0.0)..."
           
-          # Start the application using Gradle's appRun task which uses the Gretty plugin
-          # Use -Dorg.gradle.jvmargs to make Tomcat bind to all interfaces (0.0.0.0) instead of just localhost
-          ./gradlew -Dorg.gretty.host=0.0.0.0 appRun &
+          # important: used nohup to run the process in the background
+          # disown to detach the process from the terminal
+          nohup ./gradlew -Dorg.gretty.host=0.0.0.0 appRun > tomcat.log 2>&1 &
           
-          # Give the server time to initialize
-          sleep 15
+          # Get the PID of the last background process
+          TOMCAT_PID=$!
+          echo "Tomcat started with PID: $TOMCAT_PID"
+          
+          # Disown the process to detach it from the terminal
+          disown $TOMCAT_PID || echo "Failed to disown process"
+          
+          # save the PID to a file for later reference
+          echo $TOMCAT_PID > tomcat.pid
+          
+          # Wait for a few seconds to allow Tomcat to initialize
+          echo "Waiting 30 seconds for Tomcat to initialize..."
+          sleep 30
+          
+          # Tomcat process check if it is running
+          echo "Checking if Tomcat process is running:"
+          if ps -p $TOMCAT_PID > /dev/null; then
+            echo "Tomcat is running with PID: $TOMCAT_PID"
+          else
+            echo "WARNING: Tomcat process not found! It might have terminated."
+          fi
+          
+          # Check if Tomcat is accessible
+          echo "Trying to connect to server directly:"
+          curl -v http://localhost:8080/demo || echo "Server not responding on localhost"
+          curl -v http://0.0.0.0:8080/demo || echo "Server not responding on 0.0.0.0"
         else
           echo "Tomcat is already running"
         fi

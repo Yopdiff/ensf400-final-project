@@ -415,13 +415,26 @@ static void checkIfAlive() {
 void waitForHeartbeat() {
     int code = 0
     int attempts = 0
-    int maxAttempts = 30 // max 30 attempts
-    // 30 attempts at 2 seconds each is 60 seconds
+    int maxAttempts = 60 // maximum attempts to connect
+    // if we don't get a heartbeat in 60 attempts, we give up.
     
-    // Define possible server hosts to try - first try 0.0.0.0 (all interfaces) then localhost
-    def hosts = ["0.0.0.0", "localhost", "127.0.0.1", "host.docker.internal", "demo"]
+    // try any possible host name that might work.
+    def hosts = [
+        "localhost", 
+        "127.0.0.1", 
+        "0.0.0.0", 
+        "host.docker.internal", 
+        "demo", 
+        "jenkins", 
+        "172.17.0.1",     // docker gateway
+        "app",            // service name
+        "web",            // service name
+        "tomcat"          // service name
+    ]
     
-    while (code != 200 && attempts < maxAttempts){
+    logger.lifecycle("\nWaiting for server heartbeat... this may take a few minutes")
+    
+    while (code != 200 && attempts < maxAttempts) {
         attempts++
         boolean connected = false
         
@@ -430,33 +443,41 @@ void waitForHeartbeat() {
             if (connected) break
             
             try {
+                logger.debug("\nTrying to connect to http://${host}:8080/demo (Attempt ${attempts}/${maxAttempts})")
                 URL url = new URL("http://${host}:8080/demo")
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection()
                 connection.setRequestMethod("GET")
-                connection.setConnectTimeout(2000) // timeout after 2 seconds
-                connection.setReadTimeout(2000) // timeout after 2 seconds
+                connection.setConnectTimeout(3000) // time out to 3sec
+                connection.setReadTimeout(3000)    // time out to 3sec
                 connection.connect()
 
                 code = connection.getResponseCode()
 
                 if (code == 200) {
-                    logger.info("\nServer is awake at ${host}")
+                    logger.lifecycle("\nServer is awake at ${host}:8080/demo")
                     connected = true
                     break
+                } else {
+                    logger.debug("\nServer at ${host}:8080/demo responded with code: ${code}")
                 }
-            } catch (Exception ignored) {
-                // Just try next host
+            } catch (Exception e) {
+                // collect exceptions for all hosts to see if any of them worked
+                logger.debug("\nFailed to connect to ${host}: ${e.message}")
             }
         }
         
         if (!connected) {
-            logger.error("\nServer failed to connect: Connection refused (Connection refused).  Waiting 2 seconds (Attempt ${attempts}/${maxAttempts})")
-            Thread.sleep(2000)
+            if (attempts % 5 == 0) { // log every 5 attempts 
+                logger.lifecycle("\nServer connection failed. Waiting 3 seconds (Attempt ${attempts}/${maxAttempts})")
+            }
+            Thread.sleep(3000) // wait 3 seconds before retrying
         }
     }
     
     if (attempts >= maxAttempts) {
-        logger.error("\nFailed to get heartbeat after ${maxAttempts} attempts. Continuing anyway...")
+        logger.warn("\nFailed to get heartbeat after ${maxAttempts} attempts. Continuing anyway...")
+    } else {
+        logger.lifecycle("\nServer successfully connected after ${attempts} attempts")
     }
 }
 
