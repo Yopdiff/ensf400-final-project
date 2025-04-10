@@ -12,7 +12,7 @@ pipeline {
   environment {
         // This is set so that the Python API tests will recognize it
         // and go through the Zap proxy waiting at 9888
-        HTTP_PROXY = 'http://127.0.0.1:9888'
+        HTTP_PROXY = 'http://zap:8080'
         SONAR_HOST_URL = "${SONAR_HOST_URL}"
         SONAR_LOGIN = "${SONAR_LOGIN}"
         SONAR_PASSWORD = "${SONAR_PASSWORD}"
@@ -160,7 +160,7 @@ pipeline {
       sh './gradlew waitForHeartBeat'
 
       // clear Zap's memory for the incoming tests
-      sh 'curl http://zap/JSON/core/action/newSession -s --proxy localhost:9888'
+      sh 'curl http://zap/JSON/core/action/newSession -s --proxy zap:8080'
       }
     }
 
@@ -263,7 +263,7 @@ pipeline {
     stage('Collect Zap Security Report') {
       steps {
         sh 'mkdir -p build/reports/zap'
-        sh 'curl http://zap/OTHER/core/other/htmlreport --proxy localhost:9888 > build/reports/zap/zap_report.html'
+        sh 'curl http://zap/OTHER/core/other/htmlreport --proxy zap:8080 > build/reports/zap/zap_report.html'
       }
     }
 
