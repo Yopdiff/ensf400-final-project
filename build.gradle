@@ -415,8 +415,8 @@ static void checkIfAlive() {
 void waitForHeartbeat() {
     int code = 0
     int attempts = 0
-    int maxAttempts = 60 // Increased max attempts to 60
-    // 60 attempts with 3 seconds each equals 3 minutes total
+    int maxAttempts = 20 // Reduced from 60 to 20 attempts
+    // 20 attempts with 1 second each equals 20 seconds total
     
     // Try all possible hosts that could be used in Docker container environment
     def hosts = [
@@ -426,13 +426,10 @@ void waitForHeartbeat() {
         "host.docker.internal", 
         "demo", 
         "jenkins", 
-        "172.17.0.1",     // Docker's default gateway address
-        "app",            // Possible service name
-        "web",            // Possible service name
-        "tomcat"          // Possible service name
+        "172.17.0.1"     // Docker's default gateway address
     ]
     
-    logger.lifecycle("\nWaiting for server heartbeat... this may take a few minutes")
+    logger.lifecycle("\nWaiting for server heartbeat... timeout after ${maxAttempts} seconds")
     
     while (code != 200 && attempts < maxAttempts) {
         attempts++
@@ -447,8 +444,8 @@ void waitForHeartbeat() {
                 URL url = new URL("http://${host}:8080/demo")
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection()
                 connection.setRequestMethod("GET")
-                connection.setConnectTimeout(3000) // Increased timeout to 3 seconds
-                connection.setReadTimeout(3000)    // Increased read timeout to 3 seconds
+                connection.setConnectTimeout(1000) // Reduced timeout to 1 second
+                connection.setReadTimeout(1000)    // Reduced read timeout to 1 second
                 connection.connect()
 
                 code = connection.getResponseCode()
@@ -461,16 +458,16 @@ void waitForHeartbeat() {
                     logger.debug("\nServer at ${host}:8080/demo responded with code: ${code}")
                 }
             } catch (Exception e) {
-                // Log exception message for debugging
+                // Only log on debug level to reduce console output
                 logger.debug("\nFailed to connect to ${host}: ${e.message}")
             }
         }
         
         if (!connected) {
             if (attempts % 5 == 0) { // Only log every 5 attempts to avoid excessive output
-                logger.lifecycle("\nServer connection failed. Waiting 3 seconds (Attempt ${attempts}/${maxAttempts})")
+                logger.lifecycle("\nServer connection attempted ${attempts}/${maxAttempts} times")
             }
-            Thread.sleep(3000) // Increased wait time to 3 seconds
+            Thread.sleep(1000) // Reduced wait time to 1 second
         }
     }
     
