@@ -13,7 +13,7 @@ pipeline {
         // This is set so that the Python API tests will recognize it
         // and go through the Zap proxy waiting at 9888
         HTTP_PROXY = 'http://zap:8080'
-        SONAR_HOST_URL = "${SONAR_HOST_URL}"
+        SONAR_HOST_URL= 'http://sonarqube:9000'
         SONAR_LOGIN = "${SONAR_LOGIN}"
         SONAR_PASSWORD = "${SONAR_PASSWORD}"
    }
