@@ -418,27 +418,40 @@ void waitForHeartbeat() {
     int maxAttempts = 30 // max 30 attempts
     // 30 attempts at 2 seconds each is 60 seconds
     
+    // Define possible server hosts to try - first try 0.0.0.0 (all interfaces) then localhost
+    def hosts = ["0.0.0.0", "localhost", "127.0.0.1", "host.docker.internal", "demo"]
+    
     while (code != 200 && attempts < maxAttempts){
         attempts++
-        try {
-            URL url = new URL("http://localhost:8080/demo")
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection()
-            connection.setRequestMethod("GET")
-            connection.setConnectTimeout(5000) // timeout after 5 seconds
-            connection.setReadTimeout(5000) // timeout after 5 seconds
-            connection.connect()
+        boolean connected = false
+        
+        // Try each host until one succeeds
+        for (String host : hosts) {
+            if (connected) break
+            
+            try {
+                URL url = new URL("http://${host}:8080/demo")
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection()
+                connection.setRequestMethod("GET")
+                connection.setConnectTimeout(2000) // timeout after 2 seconds
+                connection.setReadTimeout(2000) // timeout after 2 seconds
+                connection.connect()
 
-            code = connection.getResponseCode()
+                code = connection.getResponseCode()
 
-            if (code != 200) {
-                logger.error("\nServer response is: " +code + ".  Waiting 2 seconds (Attempt ${attempts}/${maxAttempts})")
-                sleep 2
-            } else {
-                logger.info("\nServer is awake")
+                if (code == 200) {
+                    logger.info("\nServer is awake at ${host}")
+                    connected = true
+                    break
+                }
+            } catch (Exception ignored) {
+                // Just try next host
             }
-        } catch (Exception e) {
-            logger.error("\nServer failed to connect: ${e.getMessage()}.  Waiting 2 seconds (Attempt ${attempts}/${maxAttempts})")
-            sleep 2
+        }
+        
+        if (!connected) {
+            logger.error("\nServer failed to connect: Connection refused (Connection refused).  Waiting 2 seconds (Attempt ${attempts}/${maxAttempts})")
+            Thread.sleep(2000)
         }
     }
     
