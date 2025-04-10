@@ -133,39 +133,39 @@ pipeline {
         if ! curl -s http://localhost:8080 > /dev/null; then
           echo "Starting Tomcat server on all interfaces (0.0.0.0)..."
           
-          # Important: Use 'setsid' and 'nohup' together to completely detach the process
-          # Use '&' to run in background and capture the PID
-          setsid nohup ./gradlew -Dorg.gretty.host=0.0.0.0 appRun > tomcat.log 2>&1 &
-          
-          # Save the background process ID
+          # Run Tomcat directly in foreground for simplicity
+          ./gradlew -Dorg.gretty.host=0.0.0.0 appRun > tomcat.log 2>&1 &
           TOMCAT_PID=$!
-          echo "Tomcat started with PID: $TOMCAT_PID"
+          echo "Tomcat starting with PID: $TOMCAT_PID"
           
           # Save PID to file for later use if needed
           echo $TOMCAT_PID > tomcat.pid
           
-          # Give the server enough time to initialize
-          echo "Waiting 45 seconds for Tomcat to initialize..."
-          sleep 45
+          # Wait just 15 seconds instead of 45
+          echo "Waiting 15 seconds for Tomcat to initialize..."
+          sleep 15
           
           # Check if Tomcat process is running
           echo "Checking if Tomcat process is running:"
           if ps -p $TOMCAT_PID > /dev/null; then
-            echo "Tomcat is running with PID: $TOMCAT_PID"
+            echo "✅ Tomcat is running with PID: $TOMCAT_PID"
           else
-            echo "WARNING: Tomcat process not found! Trying to verify server is running by connection..."
-            # Verify if server is running even if process is not visible
-            if curl -s http://localhost:8080/demo > /dev/null; then
-              echo "Server is responding on localhost:8080/demo despite PID check failure"
-            else
-              echo "ERROR: Server is not responding. Tomcat may have failed to start."
-            fi
+            echo "⚠️ WARNING: Tomcat process not found! It may have exited."
           fi
           
           # Try connecting directly to the server to verify it's working
           echo "Trying to connect to server directly:"
-          curl -v http://localhost:8080/demo || echo "Server not responding on localhost"
-          curl -v http://0.0.0.0:8080/demo || echo "Server not responding on 0.0.0.0"
+          for i in {1..3}; do
+            if curl -s http://localhost:8080/demo > /dev/null; then
+              echo "✅ Server is responding on localhost:8080/demo"
+              break
+            elif [ $i -eq 3 ]; then
+              echo "❌ ERROR: Server is not responding after 3 attempts. Check tomcat.log for details."
+            else
+              echo "Attempt $i failed, retrying in 3 seconds..."
+              sleep 3
+            fi
+          done
         else
           echo "Tomcat is already running"
         fi
