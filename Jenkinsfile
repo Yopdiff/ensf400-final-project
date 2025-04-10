@@ -19,20 +19,24 @@ pipeline {
    }
 
   stages {
-    stage('Install Python and pip') {
+    stage('Check Python and Install Dependencies') {
       steps {
-        sh 'apt-get update'
-        sh 'apt-get install -y python3 python3-pip'
-        sh 'python3 --version || echo "Python installation failed"'
-        sh 'pip3 --version || echo "pip installation failed"'
-      }
-    }
-
-    stage('Add Dependencies') {
-      steps {
-        sh 'which pip3 || echo "pip3 not found"'
-        sh 'pip3 --version || echo "pip3 version check failed"'
-        sh 'pip3 install pipenv'
+        // check if Python and pip are installed
+        sh 'python3 --version || echo "Python not available"'
+        sh 'pip3 --version || echo "pip not available"'
+        
+        // if Python is not installed, try to install it
+        sh '''
+          if ! command -v python3 &> /dev/null; then
+            echo "Python not found, trying alternative installation method"
+            curl -o get-pip.py https://bootstrap.pypa.io/get-pip.py
+            python get-pip.py || python3 get-pip.py
+          fi
+        '''
+        
+        // check if pip is installed and install pipenv if not
+        sh 'pip --version || pip3 --version || echo "pip still not available"'
+        sh 'pip install pipenv || pip3 install pipenv || echo "Failed to install pipenv"'
       }
     }
 
