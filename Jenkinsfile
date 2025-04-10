@@ -132,16 +132,13 @@ pipeline {
         # Check if Tomcat is already running
         if ! curl -s http://localhost:8080 > /dev/null; then
           echo "Starting Tomcat server..."
-          # You might need to adjust this path to your Tomcat installation
-          # For Windows this would be something like:
-          # This is just an example - modify according to your actual Tomcat installation path
-          # /c/path/to/tomcat/bin/startup.sh
           
-          # If using Docker for Tomcat:
-          # docker run -d -p 8080:8080 -v ${deploy_directory}:/usr/local/tomcat/webapps tomcat:9.0
+          # Start the application using Gradle's appRun task which uses the Gretty plugin
+          # This will start a Tomcat instance with our application deployed
+          ./gradlew appRun &
           
-          # Wait a moment for Tomcat to initialize
-          sleep 10
+          # Give the server time to initialize
+          sleep 15
         else
           echo "Tomcat is already running"
         fi
