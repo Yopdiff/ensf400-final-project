@@ -115,7 +115,7 @@ pipeline {
     // patterns that suggest potential bugs.
    stage('Static Analysis') {
      steps {
-       sh './gradlew sonarqube -Dsonar.token=$SONAR_TOKEN'
+       sh './gradlew sonarqube -Dsonar.login=$SONAR_TOKEN'
         // wait for sonarqube to finish its analysis
        sleep 5
        sh './gradlew checkQualityGate'
