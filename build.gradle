@@ -411,30 +411,39 @@ static void checkIfAlive() {
 
 // This is very similar to "checkIfAlive" function, but here,
 // we just wait until we get a heartbeat.  We don't stop polling
-// until we see that.
+// until we see that or timeout is reached.
 void waitForHeartbeat() {
     int code = 0
-    while (code != 200){
+    int attempts = 0
+    int maxAttempts = 30 // max 30 attempts
+    // 30 attempts at 2 seconds each is 60 seconds
+    
+    while (code != 200 && attempts < maxAttempts){
+        attempts++
         try {
             URL url = new URL("http://localhost:8080/demo")
             HttpURLConnection connection = (HttpURLConnection) url.openConnection()
             connection.setRequestMethod("GET")
+            connection.setConnectTimeout(5000) // timeout after 5 seconds
+            connection.setReadTimeout(5000) // timeout after 5 seconds
             connection.connect()
 
             code = connection.getResponseCode()
 
             if (code != 200) {
-                logger.error("\nServer response is: " +code + ".  Waiting 2 seconds")
+                logger.error("\nServer response is: " +code + ".  Waiting 2 seconds (Attempt ${attempts}/${maxAttempts})")
                 sleep 2
             } else {
                 logger.info("\nServer is awake")
             }
-        } catch (Exception ignored) {
-            logger.error("\nServer failed to connect.  Waiting 2 seconds")
+        } catch (Exception e) {
+            logger.error("\nServer failed to connect: ${e.getMessage()}.  Waiting 2 seconds (Attempt ${attempts}/${maxAttempts})")
             sleep 2
-            // ignored.
-            //throw new Exception(ignored.getMessage())
         }
+    }
+    
+    if (attempts >= maxAttempts) {
+        logger.error("\nFailed to get heartbeat after ${maxAttempts} attempts. Continuing anyway...")
     }
 }
 

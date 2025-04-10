@@ -126,6 +126,27 @@ pipeline {
     stage('Deploy to Test') {
       steps {
       sh './gradlew deployToTestWindowsLocal'
+      
+      // Start the web server explicitly after deploying the WAR file
+      sh '''
+        # Check if Tomcat is already running
+        if ! curl -s http://localhost:8080 > /dev/null; then
+          echo "Starting Tomcat server..."
+          # You might need to adjust this path to your Tomcat installation
+          # For Windows this would be something like:
+          # This is just an example - modify according to your actual Tomcat installation path
+          # /c/path/to/tomcat/bin/startup.sh
+          
+          # If using Docker for Tomcat:
+          # docker run -d -p 8080:8080 -v ${deploy_directory}:/usr/local/tomcat/webapps tomcat:9.0
+          
+          # Wait a moment for Tomcat to initialize
+          sleep 10
+        else
+          echo "Tomcat is already running"
+        fi
+      '''
+      
       // Update PATH to include user local bin where pipenv is installed
       sh '''
         # add pip and pipenv to PATH
