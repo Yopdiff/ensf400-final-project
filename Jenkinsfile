@@ -130,81 +130,96 @@ pipeline {
     // get it running, in preparation for tests that
     // require a whole system to be running.
     stage('Deploy to Test') {
-      steps {
-      sh './gradlew deployToTestWindowsLocal'
-      
-      // Start the web server explicitly after deploying the WAR file
-      sh '''
-        # Check if Tomcat is already running
-        if ! curl -s http://localhost:8080 > /dev/null; then
-          echo "Starting Tomcat server on all interfaces (0.0.0.0)..."
-          
-          # Run Tomcat directly in background
-          ./gradlew -Dorg.gretty.host=0.0.0.0 appRun > tomcat.log 2>&1 &
-          TOMCAT_PID=$!
-          echo "Tomcat starting with PID: $TOMCAT_PID"
-          
-          # Save PID to file for later use if needed
-          echo $TOMCAT_PID > tomcat.pid
-          
-          # Wait just 10 seconds instead of 15
-          echo "Waiting 10 seconds for Tomcat to initialize..."
-          sleep 10
-          
-          # Check if Tomcat process is running
-          echo "Checking if Tomcat process is running:"
-          if ps -p $TOMCAT_PID > /dev/null; then
-            echo "✅ Tomcat is running with PID: $TOMCAT_PID"
-          else
-            echo "⚠️ WARNING: Tomcat process not found! It may have exited."
-            # Try to find Java process that might be Tomcat
-            echo "Checking for Java processes:"
-            ps aux | grep java
-          fi
-          
-          # Try connecting directly to the server to verify it's working
-          echo "Trying to connect to server directly:"
-          
-          # Use simple counter instead of brace expansion for shell compatibility
-          for i in 1 2 3; do
-            echo "Connection attempt $i..."
-            if curl -s http://localhost:8080/demo > /dev/null; then
-              echo "✅ Server is responding on localhost:8080/demo"
-              break
-            elif [ $i -eq 3 ]; then
-              echo "❌ ERROR: Server is not responding after 3 attempts. Check tomcat.log for details."
-              # Show last few lines of log for diagnostics
-              echo "Last 10 lines of tomcat.log:"
-              tail -10 tomcat.log
-            else
-              echo "Attempt $i failed, retrying in 2 seconds..."
-              sleep 2
-            fi
-          done
-        else
-          echo "Tomcat is already running"
-        fi
-      '''
-      
-      // Update PATH to include user local bin where pipenv is installed
-      sh '''
-        # add pip and pipenv to PATH
-        export PATH=$PATH:$HOME/.local/bin
-        
-        # Show the current PATH for debugging
-        echo "PATH for pipenv: $PATH"
-        
-        # Install dependencies using pipenv
-        PIPENV_IGNORE_VIRTUALENVS=1 pipenv install
-      '''
+        steps {
+          // Deploy WAR
+          sh './gradlew deployToTestWindowsLocal'
 
-      // Wait here until the server tells us it's up and listening
-      sh './gradlew waitForHeartBeat'
+          // Install dependencies
+          sh 'PIPENV_IGNORE_VIRTUALENVS=1 pipenv install'
 
-      // clear Zap's memory for the incoming tests
-      sh 'curl http://zap/JSON/core/action/newSession -s --proxy zap:8080'
+          // Wait for heartbeat
+          sh './gradlew waitForHeartBeat'
+
+          // Clear ZAP memory
+          sh 'curl http://zap/JSON/core/action/newSession -s --proxy localhost:9888'
+        }
       }
-    }
+    // stage('Deploy to Test') {
+    //   steps {
+    //   sh './gradlew deployToTestWindowsLocal'
+      
+    //   // Start the web server explicitly after deploying the WAR file
+    //   sh '''
+    //     # Check if Tomcat is already running
+    //     if ! curl -s http://localhost:8080 > /dev/null; then
+    //       echo "Starting Tomcat server on all interfaces (0.0.0.0)..."
+          
+    //       # Run Tomcat directly in background
+    //       ./gradlew -Dorg.gretty.host=0.0.0.0 appRun > tomcat.log 2>&1 &
+    //       TOMCAT_PID=$!
+    //       echo "Tomcat starting with PID: $TOMCAT_PID"
+          
+    //       # Save PID to file for later use if needed
+    //       echo $TOMCAT_PID > tomcat.pid
+          
+    //       # Wait just 10 seconds instead of 15
+    //       echo "Waiting 10 seconds for Tomcat to initialize..."
+    //       sleep 10
+          
+    //       # Check if Tomcat process is running
+    //       echo "Checking if Tomcat process is running:"
+    //       if ps -p $TOMCAT_PID > /dev/null; then
+    //         echo "✅ Tomcat is running with PID: $TOMCAT_PID"
+    //       else
+    //         echo "⚠️ WARNING: Tomcat process not found! It may have exited."
+    //         # Try to find Java process that might be Tomcat
+    //         echo "Checking for Java processes:"
+    //         ps aux | grep java
+    //       fi
+          
+    //       # Try connecting directly to the server to verify it's working
+    //       echo "Trying to connect to server directly:"
+          
+    //       # Use simple counter instead of brace expansion for shell compatibility
+    //       for i in 1 2 3; do
+    //         echo "Connection attempt $i..."
+    //         if curl -s http://localhost:8080/demo > /dev/null; then
+    //           echo "✅ Server is responding on localhost:8080/demo"
+    //           break
+    //         elif [ $i -eq 3 ]; then
+    //           echo "❌ ERROR: Server is not responding after 3 attempts. Check tomcat.log for details."
+    //           # Show last few lines of log for diagnostics
+    //           echo "Last 10 lines of tomcat.log:"
+    //           tail -10 tomcat.log
+    //         else
+    //           echo "Attempt $i failed, retrying in 2 seconds..."
+    //           sleep 2
+    //         fi
+    //       done
+    //     else
+    //       echo "Tomcat is already running"
+    //     fi
+    //   '''
+      
+    //   // Update PATH to include user local bin where pipenv is installed
+    //   sh '''
+    //     # add pip and pipenv to PATH
+    //     export PATH=$PATH:$HOME/.local/bin
+        
+    //     # Show the current PATH for debugging
+    //     echo "PATH for pipenv: $PATH"
+        
+    //     # Install dependencies using pipenv
+    //     PIPENV_IGNORE_VIRTUALENVS=1 pipenv install
+    //   '''
+
+    //   // Wait here until the server tells us it's up and listening
+    //   sh './gradlew waitForHeartBeat'
+
+    //   // clear Zap's memory for the incoming tests
+    //   sh 'curl http://zap/JSON/core/action/newSession -s --proxy zap:8080'
+    //   }
+    // }
 
 
     // Run the tests which investigate the functioning of the API.
