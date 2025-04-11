@@ -492,8 +492,12 @@ task checkQualityGate() {
 static void isQualityGateGood() {
     def sonarHostUrl = System.getenv("SONAR_HOST_URL") ?: "http://localhost:9000"
     URL url = new URL("${sonarHostUrl}/api/qualitygates/project_status?projectKey=Demo")
+    def sonarToken = System.getenv("SONAR_TOKEN") ?: System.getProperty("sonar.login")
+    
     HttpURLConnection connection = (HttpURLConnection) url.openConnection()
     connection.setRequestMethod("GET")
+    String basicAuth = "Basic " + "${sonarToken}:".bytes.encodeBase64().toString()
+    connection.setRequestProperty("Authorization", basicAuth)
     connection.connect()
     int code = connection.getResponseCode()
     BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()))

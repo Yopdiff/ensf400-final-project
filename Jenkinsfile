@@ -121,7 +121,7 @@ pipeline {
        sh './gradlew sonarqube -Dsonar.login=$SONAR_TOKEN --stacktrace'
         // wait for sonarqube to finish its analysis
        sleep 5
-       sh './gradlew checkQualityGate'
+       sh './gradlew checkQualityGate -Dsonar.login=$SONAR_TOKEN'
      }
    }
 
