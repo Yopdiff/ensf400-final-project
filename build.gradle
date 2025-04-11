@@ -418,13 +418,7 @@ void waitForHeartbeat() {
     
     // Try all possible hosts that could be used in Docker container environment
     def hosts = [
-        "localhost", 
-        "127.0.0.1", 
-        "0.0.0.0", 
-        "host.docker.internal", 
-        "demo", 
-        "jenkins", 
-        "172.17.0.1"     // Docker's default gateway address
+        "tomcat" 
     ]
     
     logger.lifecycle("\nWaiting for server heartbeat... timeout after ${maxAttempts} seconds")
@@ -438,8 +432,8 @@ void waitForHeartbeat() {
             if (connected) break
             
             try {
-                logger.debug("\nTrying to connect to http://${host}:8080/demo (Attempt ${attempts}/${maxAttempts})")
-                URL url = new URL("http://${host}:8080/demo")
+                logger.debug("\nTrying to connect to http://${host}:8888/demo (Attempt ${attempts}/${maxAttempts})")
+                URL url = new URL("http://${host}:8888/demo")
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection()
                 connection.setRequestMethod("GET")
                 connection.setConnectTimeout(1000) // Reduced timeout to 1 second
@@ -449,11 +443,11 @@ void waitForHeartbeat() {
                 code = connection.getResponseCode()
 
                 if (code == 200) {
-                    logger.lifecycle("\nServer is awake at ${host}:8080/demo")
+                    logger.lifecycle("\nServer is awake at ${host}:8888/demo")
                     connected = true
                     break
                 } else {
-                    logger.debug("\nServer at ${host}:8080/demo responded with code: ${code}")
+                    logger.debug("\nServer at ${host}:8888/demo responded with code: ${code}")
                 }
             } catch (Exception e) {
                 // Only log on debug level to reduce console output
