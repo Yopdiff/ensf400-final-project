@@ -134,7 +134,8 @@ pipeline {
         steps {
           // Deploy WAR
           sh './gradlew deployToTestWindowsLocal -Pdeploy_directory=/shared-war'
-
+          sh 'ls -l /shared-war'
+          
           // Install dependencies
           sh 'PIPENV_IGNORE_VIRTUALENVS=1 pipenv install'
 
