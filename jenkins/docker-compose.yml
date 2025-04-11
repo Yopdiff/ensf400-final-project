@@ -11,6 +11,7 @@ services:
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
+      - shared-war:/shared-war 
     # Adds host docker group to container if needed
     group_add:
       - ${DOCKER_GROUP_ID:-0}
@@ -29,7 +30,16 @@ services:
       - SONARQUBE_JDBC_URL=jdbc:postgresql://db:5432/sonar
     networks:
       - dev-net
-
+  tomcat:
+    image: tomcat:9-jdk11
+    container_name: demo-tomcat
+    ports:
+      - "8888:8080" # external port: internal port
+    volumes:
+      - ./build/libs:/usr/local/tomcat/webapps
+      - shared-war:/usr/local/tomcat/webapps
+    networks:
+      - dev-net
   db:
     image: postgres:13
     environment:
@@ -53,6 +63,7 @@ services:
 volumes:
   jenkins_home:
   sonar_data:
+  shared-war:
 
 networks:
   dev-net:

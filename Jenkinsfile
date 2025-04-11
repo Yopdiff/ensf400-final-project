@@ -133,7 +133,7 @@ pipeline {
     stage('Deploy to Test') {
         steps {
           // Deploy WAR
-          sh './gradlew deployToTestWindowsLocal'
+          sh './gradlew deployToTestWindowsLocal -Pdeploy_directory=/shared-war'
 
           // Install dependencies
           sh 'PIPENV_IGNORE_VIRTUALENVS=1 pipenv install'
