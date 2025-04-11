@@ -68,7 +68,7 @@ pipeline {
         steps {
             script {
                 try {
-                    git url: "https://github.com/Yopdiff/ensf400-final-project", branch: "jenkins2", credentialsId: 'github_token'
+                    git url: "https://github.com/Yopdiff/ensf400-final-project", branch: "jenkins2", credentialsId: 'token_github'
                     env.cloneResult=true
                 } catch (error) {
                     print(error)
