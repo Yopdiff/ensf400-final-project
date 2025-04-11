@@ -6,9 +6,7 @@ pipeline {
   agent {
     docker{
       image 'custom-gradle-pipenv:latest'
-      args '--network dev-net -v shared-war:/shared-war 
-      -v gradle-cache:/home/gradle/.gradle
-      -v /var/run/docker.sock:/var/run/docker.sock'
+      args '--network dev-net -v shared-war:/shared-war -v gradle-cache:/home/gradle/.gradle -v /var/run/docker.sock:/var/run/docker.sock'
 
     }
   }
