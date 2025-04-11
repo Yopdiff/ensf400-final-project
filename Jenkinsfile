@@ -6,7 +6,9 @@ pipeline {
   agent {
     docker{
       image 'custom-gradle-pipenv:latest'
-      args '--network dev-net -v shared-war:/shared-war -v gradle-cache:/home/gradle/.gradle'
+      args '--network dev-net -v shared-war:/shared-war 
+      -v gradle-cache:/home/gradle/.gradle
+      -v /var/run/docker.sock:/var/run/docker.sock'
 
     }
   }
@@ -135,7 +137,7 @@ pipeline {
           // Deploy WAR
           sh './gradlew deployToTestWindowsLocal -Pdeploy_directory=/shared-war'
           sh 'ls -l /shared-war'
-          
+
           sh 'docker cp build/libs/demo-1.0.0.war demo-tomcat:/usr/local/tomcat/webapps/demo.war'
 
           // Install dependencies
