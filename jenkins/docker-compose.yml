@@ -29,17 +29,21 @@ services:
       - SONARQUBE_JDBC_USERNAME=sonar
       - SONARQUBE_JDBC_PASSWORD=sonar
       - SONARQUBE_JDBC_URL=jdbc:postgresql://db:5432/sonar
-    networks:
-      - dev-net
-  tomcat:
-    image: tomcat:9-jdk11
-    container_name: demo-tomcat
-    ports:
-      - "8888:8080" # external port: internal port
     volumes:
-      - shared-war:/usr/local/tomcat/webapps
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
     networks:
       - dev-net
+  # tomcat:
+  #   image: tomcat:9-jdk11
+  #   container_name: demo-tomcat
+  #   ports:
+  #     - "8888:8080" # external port: internal port
+  #   volumes:
+  #     - shared-war:/usr/local/tomcat/webapps
+  #   networks:
+  #     - dev-net
   db:
     image: postgres:13
     environment:
@@ -51,19 +55,22 @@ services:
     networks:
       - dev-net
       
-  zap:
-    image: zaproxy/zap-stable
-    ports:
-      - "9888:8080"
-      - "9889:8090"
-    command: zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
-    networks:
-      - dev-net
+  # zap:
+  #   image: zaproxy/zap-stable
+  #   ports:
+  #     - "9888:8080"
+  #     - "9889:8090"
+  #   command: zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
+  #   networks:
+  #     - dev-net
       
 volumes:
   jenkins_home:
   sonar_data:
   shared-war:
+  sonarqube_data:
+  sonarqube_logs:
+  sonarqube_extensions:
 
 networks:
   dev-net:
