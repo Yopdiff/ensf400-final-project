@@ -136,6 +136,8 @@ pipeline {
           sh './gradlew deployToTestWindowsLocal -Pdeploy_directory=/shared-war'
           sh 'ls -l /shared-war'
           
+          sh 'docker cp build/libs/demo-1.0.0.war demo-tomcat:/usr/local/tomcat/webapps/demo.war'
+
           // Install dependencies
           sh 'PIPENV_IGNORE_VIRTUALENVS=1 pipenv install'
 
