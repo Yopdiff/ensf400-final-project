@@ -407,66 +407,33 @@ static void checkIfAlive() {
 }
 
 
+
 // This is very similar to "checkIfAlive" function, but here,
 // we just wait until we get a heartbeat.  We don't stop polling
-// until we see that or timeout is reached.
+// until we see that.
 void waitForHeartbeat() {
     int code = 0
-    int attempts = 0
-    int maxAttempts = 20 // Reduced from 60 to 20 attempts
-    // 20 attempts with 1 second each equals 20 seconds total
-    
-    // Try all possible hosts that could be used in Docker container environment
-    def hosts = [
-        "tomcat" 
-    ]
-    
-    logger.lifecycle("\nWaiting for server heartbeat... timeout after ${maxAttempts} seconds")
-    
-    while (code != 200 && attempts < maxAttempts) {
-        attempts++
-        boolean connected = false
-        
-        // Try each host until one succeeds
-        for (String host : hosts) {
-            if (connected) break
-            
-            try {
-                logger.debug("\nTrying to connect to http://${host}:8888/demo (Attempt ${attempts}/${maxAttempts})")
-                URL url = new URL("http://${host}:8888/demo")
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection()
-                connection.setRequestMethod("GET")
-                connection.setConnectTimeout(1000) // Reduced timeout to 1 second
-                connection.setReadTimeout(1000)    // Reduced read timeout to 1 second
-                connection.connect()
+    while (code != 200){
+        try {
+            URL url = new URL("http://localhost:8080/demo")
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection()
+            connection.setRequestMethod("GET")
+            connection.connect()
 
-                code = connection.getResponseCode()
+            code = connection.getResponseCode()
 
-                if (code == 200) {
-                    logger.lifecycle("\nServer is awake at ${host}:8888/demo")
-                    connected = true
-                    break
-                } else {
-                    logger.debug("\nServer at ${host}:8888/demo responded with code: ${code}")
-                }
-            } catch (Exception e) {
-                // Only log on debug level to reduce console output
-                logger.debug("\nFailed to connect to ${host}: ${e.message}")
+            if (code != 200) {
+                logger.error("\nServer response is: " +code + ".  Waiting 2 seconds")
+                sleep 2
+            } else {
+                logger.info("\nServer is awake")
             }
+        } catch (Exception ignored) {
+            logger.error("\nServer failed to connect.  Waiting 2 seconds")
+            sleep 2
+            // ignored.
+            //throw new Exception(ignored.getMessage())
         }
-        
-        if (!connected) {
-            if (attempts % 5 == 0) { // Only log every 5 attempts to avoid excessive output
-                logger.lifecycle("\nServer connection attempted ${attempts}/${maxAttempts} times")
-            }
-            Thread.sleep(1000) // Reduced wait time to 1 second
-        }
-    }
-    
-    if (attempts >= maxAttempts) {
-        logger.warn("\nFailed to get heartbeat after ${maxAttempts} attempts. Continuing anyway...")
-    } else {
-        logger.lifecycle("\nServer successfully connected after ${attempts} attempts")
     }
 }
 
