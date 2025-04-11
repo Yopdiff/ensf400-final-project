@@ -19,6 +19,7 @@ pipeline {
         SONAR_LOGIN = "${SONAR_LOGIN}"
         SONAR_PASSWORD = "${SONAR_PASSWORD}"
         SONAR_TOKEN = credentials('sonarqube-token')
+        PATH = "${env.PATH}:${env.HOME}/.local/bin"
    }
 
   stages {
