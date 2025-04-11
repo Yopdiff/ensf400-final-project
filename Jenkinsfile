@@ -123,6 +123,7 @@ pipeline {
         // wait for sonarqube to finish its analysis
        sleep 50
        sh 'echo "SONAR_HOST_URL = $SONAR_HOST_URL"'
+       export SONAR_HOST_URL=http://sonarqube:9000
        sh './gradlew checkQualityGate -Dsonar.login=$SONAR_TOKEN'
      }
    }
