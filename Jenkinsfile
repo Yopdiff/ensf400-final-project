@@ -64,6 +64,21 @@ pipeline {
 
     // build the war file (the binary).  This is the only
     // place that happens.
+    stage('Git Clone') {
+        steps {
+            script {
+                try {
+                    git url: "https://github.com/Yopdiff/ensf400-final-project", branch: "jenkins2", credentialsId: 'token_github'
+                    env.cloneResult=true
+                } catch (error) {
+                    print(error)
+                    env.cloneResult=false
+                    currentBuild.result = 'FAILURE'
+                }
+            }
+        }
+    }
+
     stage('Build') {
       steps {
         sh './gradlew clean assemble'
