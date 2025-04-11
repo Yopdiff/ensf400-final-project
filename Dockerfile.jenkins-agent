@@ -3,6 +3,10 @@ FROM gradle:7.6.1-jdk11
 
 USER root
 # Create the shared directory with proper permissions
+
+ARG DOCKER_GID=989
+RUN groupadd -g ${DOCKER_GID} docker \
+    && usermod -aG docker gradle
 RUN mkdir -p /shared-war && \
     chmod -R 777 /shared-war
 

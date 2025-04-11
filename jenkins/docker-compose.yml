@@ -15,6 +15,7 @@ services:
     # Adds host docker group to container if needed
     group_add:
       - ${DOCKER_GROUP_ID:-0}
+      - ${DOCKER_GROUP_ID:-989}
     env_file:
       - .env
     networks:
