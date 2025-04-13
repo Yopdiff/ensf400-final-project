@@ -136,7 +136,7 @@ pipeline {
     }
        sh './gradlew sonarqube -Dsonar.login=$SONAR_TOKEN --stacktrace --info'
         // wait for sonarqube to finish its analysis
-       sleep 50
+       sleep 20
        sh 'echo "SONAR_HOST_URL = $SONAR_HOST_URL"'
        sh '''
          export SONAR_HOST_URL=http://sonarqube:9000
